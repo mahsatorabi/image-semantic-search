@@ -36,7 +36,8 @@ def test_upsert_and_get(tmp_path: Path):
         assert fetched is not None
         assert fetched.caption == "A red cat on a sofa"
         assert fetched.tags == ["cat", "sofa", "red"]
-        assert fetched.embedding == [0.1, 0.2, 0.3]
+        assert fetched.embedding is not None
+        np.testing.assert_allclose(fetched.embedding, [0.1, 0.2, 0.3], rtol=1e-5)
 
 
 def test_stats(tmp_path: Path):

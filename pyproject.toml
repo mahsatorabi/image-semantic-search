@@ -1,13 +1,13 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-image-indexer"
 version = "0.1.0"
 description = "Local-first intelligent image indexing with Cloudflare Workers AI and semantic search"
 readme = "README.md"
-license = "MIT"
+license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [{ name = "AI Image Indexer Contributors" }]
 keywords = ["image-search", "semantic-search", "cloudflare", "workers-ai", "cli"]
@@ -42,10 +42,10 @@ dev = [
 image-indexer = "ai_image_indexer.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/your-org/ai-image-indexer"
-Documentation = "https://github.com/your-org/ai-image-indexer#readme"
-Repository = "https://github.com/your-org/ai-image-indexer"
-Issues = "https://github.com/your-org/ai-image-indexer/issues"
+Homepage = "https://github.com/mahsatorabi/image-semantic-search"
+Documentation = "https://github.com/mahsatorabi/image-semantic-search#readme"
+Repository = "https://github.com/mahsatorabi/image-semantic-search"
+Issues = "https://github.com/mahsatorabi/image-semantic-search/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/ai_image_indexer"]

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-DEFAULT_VISION_MODEL = "@cf/unum/uform-gen2-qwen-500m"
+DEFAULT_VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct"
 DEFAULT_EMBEDDING_MODEL = "@cf/google/embeddinggemma-300m"
 DEFAULT_DB_DIR = Path.home() / ".ai-image-indexer"
 DEFAULT_DB_PATH = DEFAULT_DB_DIR / "index.db"

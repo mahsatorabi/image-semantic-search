@@ -259,9 +259,10 @@ def export(output: Path, fmt: str, env_file: Path | None) -> None:
             with output.open("w", newline="", encoding="utf-8") as f:
                 writer = csv.DictWriter(f, fieldnames=records[0].keys())
                 writer.writeheader()
-                for row in records:
-                    row = dict(row)
-                    row["tags"] = ", ".join(row["tags"])
-                    writer.writerow(row)
+                for rec in records:
+                    rec = dict(rec)
+                    tags = rec["tags"]
+                    rec["tags"] = ", ".join(tags) if isinstance(tags, list) else str(tags)
+                    writer.writerow(rec)
 
     console.print(f"[green]Exported {len(records)} records to[/green] {output.resolve()}")

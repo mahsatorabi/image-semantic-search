@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
@@ -11,6 +12,8 @@ from ai_image_indexer.config import Settings
 from ai_image_indexer.database.repository import ImageRepository
 from ai_image_indexer.database.schema import ImageRecord, utc_now_iso
 from ai_image_indexer.scanner.scanner import ScannedImage, needs_reindex, scan_folder
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -94,6 +97,7 @@ class IndexingPipeline:
                 stats.indexed += 1
             except Exception:
                 stats.failed += 1
+                logger.exception("Failed to index %s", img.filepath)
 
         for folder in folder_list:
             root = str(folder.resolve())

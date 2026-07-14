@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import re
 import time
@@ -71,45 +72,40 @@ class CloudflareAIClient:
 
     def analyze_image(self, image_path: Path) -> dict[str, str | list[str]]:
         image_bytes = self._read_image_bytes(image_path)
+        ext = image_path.suffix.lower().lstrip(".")
+        mime = {"jpg": "jpeg", "jpeg": "jpeg", "png": "png", "gif": "gif", "webp": "webp"}.get(ext, "jpeg")
+        b64_image = f"data:image/{mime};base64,{base64.b64encode(bytes(image_bytes)).decode()}"
 
-        caption_result = self._run_model(
+        prompt = (
+            "Analyze this image and return exactly 3 lines:\n"
+            "Line 1: A detailed description of the image (objects, people, colors, setting, mood).\n"
+            "Line 2: 5-10 comma-separated descriptive tags.\n"
+            "Line 3: Any visible text in the image, or NONE if no text is visible.\n"
+            "Do not add labels or numbering. Just the 3 lines."
+        )
+
+        combined_result = self._run_model(
             self.settings.vision_model,
             {
-                "image": image_bytes,
-                "prompt": (
-                    "Describe this image in detail. Include objects, people, colors, "
-                    "setting, mood, and any visible text."
-                ),
-                "max_tokens": 512,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "image_url", "image_url": {"url": b64_image}},
+                            {"type": "text", "text": prompt},
+                        ],
+                    }
+                ],
+                "max_tokens": 768,
             },
         )
-        caption = self._extract_text(caption_result)
 
-        tags_result = self._run_model(
-            self.settings.vision_model,
-            {
-                "image": image_bytes,
-                "prompt": (
-                    "List 5-10 short descriptive tags for this image. "
-                    "Return only comma-separated tags, no explanation."
-                ),
-                "max_tokens": 128,
-            },
-        )
-        tags = self._parse_tags(self._extract_text(tags_result))
+        raw_text = self._extract_text(combined_result)
+        lines = [line.strip() for line in raw_text.strip().splitlines() if line.strip()]
 
-        ocr_result = self._run_model(
-            self.settings.vision_model,
-            {
-                "image": image_bytes,
-                "prompt": (
-                    "Extract all visible text from this image. "
-                    "If no text is visible, respond with NONE."
-                ),
-                "max_tokens": 256,
-            },
-        )
-        ocr_text = self._extract_text(ocr_result)
+        caption = lines[0] if len(lines) >= 1 else ""
+        tags = self._parse_tags(lines[1]) if len(lines) >= 2 else []
+        ocr_text = lines[2] if len(lines) >= 3 else ""
         if ocr_text.upper().strip() in {"NONE", "N/A", ""}:
             ocr_text = ""
 
