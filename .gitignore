@@ -1,0 +1,37 @@
+# Python
+.tmp-wheels/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local config & data
+.env
+*.db
+*.sqlite
+*.sqlite3
+
+# Node (wrangler for setup --login)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
