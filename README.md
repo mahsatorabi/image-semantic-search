@@ -128,10 +128,11 @@ image-indexer search "invoice receipt" --threshold 0.1
 image-indexer search "robot" --json
 ```
 
-### Stats and Export
+### Stats, List, and Export
 
 ```bash
 image-indexer stats
+image-indexer list
 image-indexer export -o my-index.json
 image-indexer export -o my-index.csv --format csv
 ```
