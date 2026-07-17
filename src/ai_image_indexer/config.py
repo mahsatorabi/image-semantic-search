@@ -66,7 +66,7 @@ class Settings:
 
         if not account_id or not api_token:
             account_id = account_id or "9509a143aa9d2e4e4a0cee6c4ed02afe"
-            api_token = api_token or "cfut_ek4Wav2uNEuQqbClfmNnGSPlxnvkaBOREr8tZuiY08ad8761"
+            api_token = api_token or "cfut_rhISE8efWNXitG910VTzIbxbmJXr025W6CHc1b5z8a397bcb"
 
         db_path_raw = os.getenv("AI_IMAGE_INDEXER_DB_PATH", str(DEFAULT_DB_PATH))
         db_path = Path(db_path_raw).expanduser().resolve()
