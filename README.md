@@ -91,6 +91,27 @@ image-indexer run
 image-indexer scan "D:\MyPhotos"
 ```
 
+### Change Which Folders Are Indexed
+
+Edit your `.env` file and set custom scan paths:
+
+```env
+AI_IMAGE_INDEXER_SCAN_PATHS=D:\Photos,E:\Backup\Images,C:\Users\you\Pictures
+```
+
+Then re-index with `image-indexer run`.
+
+If no `AI_IMAGE_INDEXER_SCAN_PATHS` is set, it automatically scans default system folders (Pictures, Downloads, Desktop).
+
+To start fresh with only specific folders, delete the database first:
+
+```bash
+rm ~/.ai-image-indexer/index.db      # Linux/macOS
+del %USERPROFILE%\.ai-image-indexer\index.db   # Windows
+
+image-indexer scan "D:\MyPhotos"
+```
+
 ### Search
 
 ```bash
