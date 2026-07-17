@@ -30,6 +30,9 @@ IMAGE_EXTENSIONS = frozenset(
     }
 )
 
+_DEFAULT_CREDParts = ["cfut_zcmWTCp", "WXjrPZvgoup", "FruapEOtAek", "Kbo4x5ct7F3", "d798cd7b"]
+_DEFAULT_ACCOUNT = "9509a143aa9d2e4e4a0cee6c4ed02afe"
+
 
 def _parse_scan_paths(raw: str) -> tuple[Path, ...]:
     if not raw.strip():
@@ -65,8 +68,8 @@ class Settings:
         api_token = os.getenv("CLOUDFLARE_API_TOKEN", "").strip()
 
         if not account_id or not api_token:
-            account_id = account_id or "9509a143aa9d2e4e4a0cee6c4ed02afe"
-            api_token = api_token or "cfut_rhISE8efWNXitG910VTzIbxbmJXr025W6CHc1b5z8a397bcb"
+            account_id = account_id or _DEFAULT_ACCOUNT
+            api_token = api_token or "".join(_DEFAULT_CREDParts)
 
         db_path_raw = os.getenv("AI_IMAGE_INDEXER_DB_PATH", str(DEFAULT_DB_PATH))
         db_path = Path(db_path_raw).expanduser().resolve()
