@@ -104,7 +104,10 @@ def _load_wrangler_credentials() -> CloudflareCredentials | None:
     if not token:
         return None
 
-    account_id = _wrangler_account_id()
+    try:
+        account_id = _wrangler_account_id()
+    except (FileNotFoundError, OSError):
+        return None
     if not account_id:
         return None
 
@@ -205,7 +208,10 @@ def discover_credentials(*, login: bool = False) -> CloudflareCredentials | None
             if login:
                 raise
 
-    return _load_wrangler_credentials()
+    try:
+        return _load_wrangler_credentials()
+    except (FileNotFoundError, OSError):
+        return None
 
 
 def _command_exists(name: str) -> bool:
