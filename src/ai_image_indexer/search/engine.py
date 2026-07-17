@@ -22,7 +22,9 @@ class SearchEngine:
         self.repo = repo
         self.ai_client = ai_client
 
-    def search(self, query: str, *, limit: int = 10) -> list[SearchResult]:
+    def search(
+        self, query: str, *, limit: int = 10, min_score: float = 0.25
+    ) -> list[SearchResult]:
         query = query.strip()
         if not query:
             return []
@@ -45,7 +47,8 @@ class SearchEngine:
             if vec_norm == 0:
                 continue
             score = float(np.dot(query_embedding, vec) / (query_norm * vec_norm))
-            scored.append(SearchResult(record=record, score=score))
+            if score >= min_score:
+                scored.append(SearchResult(record=record, score=score))
 
         scored.sort(key=lambda r: r.score, reverse=True)
         return scored[:limit]

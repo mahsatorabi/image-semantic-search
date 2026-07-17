@@ -48,9 +48,31 @@ def test_search_ranks_by_similarity():
     ]
     engine = SearchEngine(FakeRepo(records), FakeAIClient())  # type: ignore[arg-type]
     results = engine.search("cat", limit=2)
-    assert len(results) == 2
+    assert len(results) == 1
     assert "cat" in results[0].record.caption.lower()
-    assert results[0].score > results[1].score
+    assert results[0].score == 1.0
+
+
+def test_search_threshold_filters_irrelevant():
+    records = [
+        _record("A cat sleeping", [1.0, 0.0, 0.0]),
+        _record("A dog running", [0.0, 1.0, 0.0]),
+        _record("A mountain view", [0.5, 0.5, 0.0]),
+    ]
+    engine = SearchEngine(FakeRepo(records), FakeAIClient())  # type: ignore[arg-type]
+    results = engine.search("cat", limit=10, min_score=0.5)
+    assert all(r.score >= 0.5 for r in results)
+    assert "cat" in results[0].record.caption.lower()
+
+
+def test_search_low_threshold_returns_more():
+    records = [
+        _record("A cat sleeping", [1.0, 0.0, 0.0]),
+        _record("A dog running", [0.0, 1.0, 0.0]),
+    ]
+    engine = SearchEngine(FakeRepo(records), FakeAIClient())  # type: ignore[arg-type]
+    results = engine.search("cat", limit=10, min_score=0.0)
+    assert len(results) == 2
 
 
 def test_search_empty_query():

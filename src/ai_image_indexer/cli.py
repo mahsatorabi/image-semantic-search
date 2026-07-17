@@ -152,16 +152,24 @@ def scan(folder: Path, force: bool, env_file: Path | None) -> None:
 @main.command()
 @click.argument("query")
 @click.option("--limit", "-n", default=10, show_default=True, help="Max results to show.")
+@click.option(
+    "--threshold",
+    "-t",
+    default=0.25,
+    show_default=True,
+    type=float,
+    help="Minimum similarity score (0-1). Results below this are hidden.",
+)
 @click.option("--json", "as_json", is_flag=True, help="Output results as JSON (paths only).")
 @click.option("--env-file", type=click.Path(exists=True, path_type=Path), help="Path to .env file.")
-def search(query: str, limit: int, as_json: bool, env_file: Path | None) -> None:
+def search(query: str, limit: int, threshold: float, as_json: bool, env_file: Path | None) -> None:
     """Search indexed images by natural language query."""
     settings = Settings.from_env(env_file) if env_file else _load_settings()
 
     with ImageRepository(settings.db_path) as repo, CloudflareAIClient(settings) as ai:
         engine = SearchEngine(repo, ai)
         try:
-            results = engine.search(query, limit=limit)
+            results = engine.search(query, limit=limit, min_score=threshold)
         except CloudflareAIError as exc:
             err_console.print(f"[red]Cloudflare AI error:[/red] {exc}")
             sys.exit(1)
