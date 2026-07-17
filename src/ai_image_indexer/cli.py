@@ -211,6 +211,32 @@ def search(query: str, limit: int, threshold: float, as_json: bool, env_file: Pa
     console.print(table)
 
 
+@main.command("list")
+@click.option("--env-file", type=click.Path(exists=True, path_type=Path), help="Path to .env file.")
+def list_images(env_file: Path | None) -> None:
+    """List all indexed images with their descriptions."""
+    settings = Settings.from_env(env_file) if env_file else _load_settings()
+
+    with ImageRepository(settings.db_path) as repo:
+        records = repo.export_all()
+
+    if not records:
+        console.print("[yellow]No indexed images found.[/yellow] Run [bold]image-indexer run[/bold] first.")
+        return
+
+    table = Table(title=f"All Indexed Images ({len(records)} total)", show_lines=True)
+    table.add_column("File", style="green", max_width=40)
+    table.add_column("Caption", style="white", max_width=60)
+    table.add_column("Tags", style="cyan", max_width=30)
+
+    for rec in records:
+        tags = ", ".join(rec["tags"]) if isinstance(rec["tags"], list) else str(rec["tags"])
+        caption = rec["caption"][:120] + ("..." if len(rec["caption"]) > 120 else "")
+        table.add_row(rec["filename"], caption, tags)
+
+    console.print(table)
+
+
 @main.command()
 @click.option("--env-file", type=click.Path(exists=True, path_type=Path), help="Path to .env file.")
 def stats(env_file: Path | None) -> None:
