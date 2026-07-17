@@ -1,28 +1,28 @@
 # AI Image Indexer
 
-ابزار خط فرمان برای **توصیف و ایندکس کردن عکس‌های سیستم** با مدل‌های رایگان Cloudflare Workers AI — بدون کپی کردن خود فایل‌ها. فقط **مسیر فایل + توضیح + embedding** در یک دیتابیس SQLite محلی ذخیره می‌شود.
+A command-line tool for **describing and indexing your system images** using free Cloudflare Workers AI models — without copying the actual files. Only **file paths + captions + embeddings** are stored in a local SQLite database.
 
-## چه کار می‌کند؟
+## What Does It Do?
 
-1. **اسکن** — پوشه‌های رایج عکس (Pictures، Downloads، Desktop و ...) را پیدا می‌کند
-2. **توصیف با AI** — هر عکس را با مدل vision در Cloudflare توصیف می‌کند (caption، tags، متن OCR)
-3. **ذخیره محلی** — مسیر فایل و متادیتا در `~/.ai-image-indexer/index.db` (بدون ذخیره خود عکس)
-4. **جستجو** — با زبان طبیعی سرچ کنید و مسیر عکس‌های مرتبط را بگیرید
+1. **Scan** — Finds common image folders (Pictures, Downloads, Desktop, etc.)
+2. **AI Description** — Describes each image using Cloudflare's vision model (caption, tags, OCR text)
+3. **Local Storage** — Stores file paths and metadata in `~/.ai-image-indexer/index.db` (never stores the images themselves)
+4. **Search** — Search by natural language and get back the paths of relevant images
 
-هر بار که `run` بزنید، عکس‌های جدید یا تغییرکرده دوباره پردازش می‌شوند؛ بقیه skip می‌شوند.
+Each time you run `run`, new or changed images are re-processed; the rest are skipped.
 
-## پیش‌نیاز
+## Prerequisites
 
 - Python 3.10+
-- حساب رایگان Cloudflare با Workers AI
+- A free Cloudflare account with Workers AI enabled
 
-### گرفتن API Key
+### Getting Your API Key
 
-1. برو به [Cloudflare Dashboard](https://dash.cloudflare.com)
-2. **Workers AI** → **Use REST API**
-3. `Account ID` و `API Token` را کپی کن
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com)
+2. Navigate to **Workers AI** → **Use REST API**
+3. Copy your `Account ID` and create an API Token
 
-## نصب از GitHub
+## Installation
 
 ```bash
 git clone https://github.com/mahsatorabi/image-semantic-search.git
@@ -37,69 +37,77 @@ source .venv/bin/activate
 pip install -e .
 ```
 
-## تنظیمات
+## Setup
 
-### روش ۱ — setup خودکار (پیشنهادی)
+### Option 1 — Automatic Setup (Recommended)
 
 ```bash
 image-indexer setup
 ```
 
-این دستور:
-- صفحه **Workers AI** در Cloudflare را در مرورگر باز می‌کند
-- از شما `Account ID` و `API Token` می‌گیرد
-- اتصال را تست می‌کند و فایل `.env` می‌سازد
+This command:
+- Opens the **Workers AI** page in Cloudflare's dashboard
+- Asks for your `Account ID` and `API Token`
+- Tests the connection and creates a `.env` file
 
-اگر Node.js/npm دارید:
+If you have Node.js/npm installed:
 
 ```bash
 image-indexer setup --login
 ```
 
-(با `wrangler login` از مرورگر OAuth می‌گیرد)
+(This uses `wrangler login` for browser-based OAuth authentication)
 
-### روش ۲ — دستی
+### Option 2 — Manual Setup
 
-فایل `.env` بساز (یا از `.env.example` کپی کن):
+Create a `.env` file (or copy from `.env.example`):
 
 ```env
 CLOUDFLARE_ACCOUNT_ID=your_account_id
 CLOUDFLARE_API_TOKEN=your_api_token
 ```
 
-اختیاری:
+Optional:
 
 ```env
-# مسیرهای سفارشی (با کاما جدا)
+# Custom scan paths (comma-separated)
 AI_IMAGE_INDEXER_SCAN_PATHS=D:\Photos,E:\Backup\Images
 
-# محل دیتابیس
+# Database location
 AI_IMAGE_INDEXER_DB_PATH=~/.ai-image-indexer/index.db
 ```
 
-## استفاده
+## Usage
 
-### ایندکس کردن همه عکس‌های سیستم
+### Index All System Images
 
 ```bash
 image-indexer run
 ```
 
-### ایندکس یک پوشه خاص
+### Index a Specific Folder
 
 ```bash
 image-indexer scan "D:\MyPhotos"
 ```
 
-### جستجو
+### Search
 
 ```bash
-image-indexer search "گربه روی مبل"
+# Basic search (only shows results with similarity >= 0.25)
+image-indexer search "cat on sofa"
+
+# Show more results
 image-indexer search "sunset beach" -n 5
-image-indexer search "invoice receipt" --json
+
+# Lower the threshold to include less relevant results
+image-indexer search "invoice receipt" --threshold 0.1
+
+# Output as JSON
+image-indexer search "robot" --json
 ```
 
-### آمار و خروجی
+### Stats and Export
 
 ```bash
 image-indexer stats
@@ -107,39 +115,39 @@ image-indexer export -o my-index.json
 image-indexer export -o my-index.csv --format csv
 ```
 
-## معماری
+## Architecture
 
 ```
-عکس‌های سیستم (فقط خواندن)
+System images (read-only)
         ↓
-   Scanner (مسیر + hash)
+   Scanner (path + hash)
         ↓
  Cloudflare Workers AI  ←  caption / tags / OCR / embedding
         ↓
  SQLite (~/.ai-image-indexer/index.db)
-   • filepath (نه خود فایل)
+   • filepath (not the image itself)
    • caption, tags, ocr_text
    • embedding vector
         ↓
-   Semantic Search (cosine similarity)
+ Semantic Search (cosine similarity + threshold filtering)
         ↓
-   مسیر عکس‌های پیدا شده
+   Paths of matching images
 ```
 
-## مدل‌های پیش‌فرض (رایگان در Cloudflare)
+## Default Models (Free on Cloudflare)
 
-| کار | مدل |
-|-----|-----|
-| Vision (توصیف عکس) | `@cf/unum/uform-gen2-qwen-500m` |
-| Embedding (جستجو) | `@cf/google/embeddinggemma-300m` |
+| Task | Model |
+|------|-------|
+| Vision (image description) | `@cf/unum/uform-gen2-qwen-500m` |
+| Embedding (search) | `@cf/google/embeddinggemma-300m` |
 
-## توسعه
+## Development
 
 ```bash
 pip install -e ".[dev]"
 pytest
 ```
 
-## لایسنس
+## License
 
 MIT
